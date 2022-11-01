@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: create crypto table
+      author: GT
+      changes:
+        - createTable:
+            tableName: crypto
+            remarks: exchange
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: crypto_pk
+                    nullable: false
+              - column:
+                  name: symbol
+                  type: character varying(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timestamp
+                  type: timestamp without time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: double precision
+                  constraints:
+                    nullable: false
