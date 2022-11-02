@@ -11,12 +11,15 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
+import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 
 @Configuration
 @EnableBatchProcessing
@@ -26,16 +29,25 @@ public class SpringBatchConfig {
     public final StepBuilderFactory stepBuilderFactory;
     public final CryptoRepository cryptoRepository;
 
+    @Value("classpath:/input/*.csv")
+    private Resource[] inputResources;
+
     public SpringBatchConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, CryptoRepository cryptoRepository) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
         this.cryptoRepository = cryptoRepository;
     }
-
     @Bean
-    FlatFileItemReader<CryptoReadCSVDto> reader(){
+    public MultiResourceItemReader<CryptoReadCSVDto> multiReader(){
+        MultiResourceItemReader<CryptoReadCSVDto> multiReader = new MultiResourceItemReader<>();
+        multiReader.setResources(inputResources);
+        multiReader.setDelegate(reader());
+        return multiReader;
+    }
+    @Bean
+    public FlatFileItemReader<CryptoReadCSVDto> reader(){
         FlatFileItemReader<CryptoReadCSVDto> reader = new FlatFileItemReader<>();
-        reader.setResource(new FileSystemResource("src/main/resources/BTC_values.csv"));
+//        reader.setResource(new FileSystemResource("src/main/resources/BTC_values.csv"));
         reader.setName("csvReader");
         reader.setLinesToSkip(1);
         reader.setLineMapper(lineMapper());
@@ -72,7 +84,7 @@ public class SpringBatchConfig {
     @Bean
     public Step firstStep(){
         return stepBuilderFactory.get("first-step-csv").<CryptoReadCSVDto, Crypto>chunk(10)
-                .reader(reader())
+                .reader(multiReader())
                 .processor(processor())
                 .writer(writer())
                 .build();
