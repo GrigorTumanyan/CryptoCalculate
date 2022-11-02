@@ -1,6 +1,6 @@
 package am.cryptoCalculate.config;
 
-import am.cryptoCalculate.dto.CryptoDto;
+import am.cryptoCalculate.dto.CryptoReadCSVDto;
 import am.cryptoCalculate.model.Crypto;
 import am.cryptoCalculate.repository.CryptoRepository;
 import org.springframework.batch.core.Job;
@@ -33,8 +33,8 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    FlatFileItemReader<CryptoDto> reader(){
-        FlatFileItemReader<CryptoDto> reader = new FlatFileItemReader<>();
+    FlatFileItemReader<CryptoReadCSVDto> reader(){
+        FlatFileItemReader<CryptoReadCSVDto> reader = new FlatFileItemReader<>();
         reader.setResource(new FileSystemResource("src/main/resources/BTC_values.csv"));
         reader.setName("csvReader");
         reader.setLinesToSkip(1);
@@ -42,15 +42,15 @@ public class SpringBatchConfig {
         return reader;
     }
 
-    private LineMapper<CryptoDto> lineMapper() {
-        DefaultLineMapper<CryptoDto> lineMapper = new DefaultLineMapper<>();
+    private LineMapper<CryptoReadCSVDto> lineMapper() {
+        DefaultLineMapper<CryptoReadCSVDto> lineMapper = new DefaultLineMapper<>();
         DelimitedLineTokenizer lineTokenizer = new DelimitedLineTokenizer();
         lineTokenizer.setDelimiter(",");
         lineTokenizer.setStrict(false);
         lineTokenizer.setNames("timestamp", "symbol", "price");
 
-        BeanWrapperFieldSetMapper<CryptoDto> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
-        fieldSetMapper.setTargetType(CryptoDto.class);
+        BeanWrapperFieldSetMapper<CryptoReadCSVDto> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
+        fieldSetMapper.setTargetType(CryptoReadCSVDto.class);
 
         lineMapper.setLineTokenizer(lineTokenizer);
         lineMapper.setFieldSetMapper(fieldSetMapper);
@@ -71,7 +71,7 @@ public class SpringBatchConfig {
 
     @Bean
     public Step firstStep(){
-        return stepBuilderFactory.get("first-step-csv").<CryptoDto, Crypto>chunk(10)
+        return stepBuilderFactory.get("first-step-csv").<CryptoReadCSVDto, Crypto>chunk(10)
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())

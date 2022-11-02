@@ -9,9 +9,6 @@ import am.cryptoCalculate.service.CryptoService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,7 +24,7 @@ public class CryptoServiceImpl implements CryptoService {
     @Override
     public CryptoDto getById(Long id) {
         Crypto byId = cryptoRepository.getById(id);
-        return CryptoMapper.toCryptoDto(byId);
+        return CryptoMapper.fromCryptoToCryptoDto(byId);
     }
 
     @Override
@@ -36,7 +33,7 @@ public class CryptoServiceImpl implements CryptoService {
         if (oldest.isEmpty()) {
             throw new RecordNotFoundException("Crypto : " + symbol + " is not exist");
         }
-        return CryptoMapper.toCryptoDto(oldest.get(0));
+        return CryptoMapper.fromCryptoToCryptoDto(oldest.get(0));
     }
 
     @Override
@@ -45,7 +42,7 @@ public class CryptoServiceImpl implements CryptoService {
         if (newest.isEmpty()) {
             throw new RecordNotFoundException("Crypto : " + symbol + " is not exist");
         }
-        return CryptoMapper.toCryptoDto(newest.get(0));
+        return CryptoMapper.fromCryptoToCryptoDto(newest.get(0));
     }
 
     @Override
@@ -54,13 +51,13 @@ public class CryptoServiceImpl implements CryptoService {
         if (crypto.isEmpty()) {
             throw new RecordNotFoundException(symbol + " crypto does not exist");
         }
-        return CryptoMapper.toCryptoDto(crypto.get(0));
+        return CryptoMapper.fromCryptoToCryptoDto(crypto.get(0));
     }
 
     @Override
     public CryptoDto getMaxBySymbol(String symbol) {
         List<Crypto> max = cryptoRepository.getMaxBySymbol(symbol);
-        return CryptoMapper.toCryptoDto(max.get(0));
+        return CryptoMapper.fromCryptoToCryptoDto(max.get(0));
     }
 
     @Override
@@ -74,7 +71,7 @@ public class CryptoServiceImpl implements CryptoService {
         if (cryptoList.isEmpty()) {
             throw new RecordNotFoundException(symbol + " crypto does not exist");
         }
-        return CryptoMapper.toCryptoDto(cryptoList.get(0));
+        return CryptoMapper.fromCryptoToCryptoDto(cryptoList.get(0));
     }
 
     @Override
