@@ -28,12 +28,15 @@ public class CryptoMapper {
 
 
     public static Crypto fromCryptoReadCSVDtoToCrypto(CryptoReadCSVDto cryptoReadCSVDto){
-        LocalDateTime localDateTime = new Timestamp(new Date(cryptoReadCSVDto.getTimestamp()).getTime()).toLocalDateTime();
+
         return Crypto.builder()
                 .symbol(cryptoReadCSVDto.getSymbol())
                 .price(cryptoReadCSVDto.getPrice())
-                .timestamp(localDateTime)
+                .timestamp(longToLocalDateTime(cryptoReadCSVDto.getTimestamp()))
                 .build();
+    }
 
+    public static LocalDateTime longToLocalDateTime(long timestamp){
+        return new Timestamp(new Date(timestamp).getTime()).toLocalDateTime();
     }
 }
