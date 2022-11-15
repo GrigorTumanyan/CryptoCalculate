@@ -32,4 +32,6 @@ public interface CryptoRepository extends JpaRepository<Crypto, Long> {
     @Query(value = "SELECT * FROM crypto WHERE price = (SELECT max(price) FROM crypto WHERE symbol = :symbol" + DURATION +
             " ORDER BY timestamp ASC", nativeQuery = true)
     List<Crypto> getMaxBySymbol(String symbol);
+
+    List<Crypto> getByTimestamp(LocalDateTime localDateTime);
 }

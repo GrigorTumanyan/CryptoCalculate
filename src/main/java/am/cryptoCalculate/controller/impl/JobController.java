@@ -8,6 +8,7 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.beans.factory.annotation.Lookup;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,23 +17,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/job")
 public class JobController {
     private final JobLauncher jobLauncher;
-    private final Job job;
 
-    public JobController(JobLauncher jobLauncher, Job job) {
+    public JobController(JobLauncher jobLauncher) {
         this.jobLauncher = jobLauncher;
-        this.job = job;
     }
 
     @PostMapping("/import")
-    public void importCsv(){
+    public void importCsv() {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addLong("startAt", System.currentTimeMillis()).toJobParameters();
 
         try {
-            jobLauncher.run(job, jobParameters);
+            jobLauncher.run(job(), jobParameters);
         } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException |
                  JobParametersInvalidException e) {
             e.printStackTrace();
         }
+    }
+
+    @Lookup
+    public Job job (){
+        return null;
     }
 }

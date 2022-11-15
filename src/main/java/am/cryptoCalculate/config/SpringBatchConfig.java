@@ -11,12 +11,22 @@ import org.springframework.batch.core.configuration.annotation.StepBuilderFactor
 import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
+import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.PathResource;
+import org.springframework.core.io.Resource;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Stream;
 
 @Configuration
 @EnableBatchProcessing
@@ -26,6 +36,9 @@ public class SpringBatchConfig {
     public final StepBuilderFactory stepBuilderFactory;
     public final CryptoRepository cryptoRepository;
 
+    @Value("${input.files.location}")
+    private String inputResources;
+
     public SpringBatchConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, CryptoRepository cryptoRepository) {
         this.jobBuilderFactory = jobBuilderFactory;
         this.stepBuilderFactory = stepBuilderFactory;
@@ -33,9 +46,22 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    FlatFileItemReader<CryptoReadCSVDto> reader(){
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public MultiResourceItemReader<CryptoReadCSVDto> multiReader() throws IOException {
+        MultiResourceItemReader<CryptoReadCSVDto> multiReader = new MultiResourceItemReader<>();
+        Resource[] convert;
+        try (Stream<Path> list = Files.list(Path.of(inputResources))) {
+            convert = list.map(PathResource::new).toArray(Resource[]::new);
+        }
+        multiReader.setResources(convert);
+        multiReader.setDelegate(reader());
+        return multiReader;
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public FlatFileItemReader<CryptoReadCSVDto> reader() {
         FlatFileItemReader<CryptoReadCSVDto> reader = new FlatFileItemReader<>();
-        reader.setResource(new FileSystemResource("src/main/resources/BTC_values.csv"));
         reader.setName("csvReader");
         reader.setLinesToSkip(1);
         reader.setLineMapper(lineMapper());
@@ -58,11 +84,14 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public CryptoProcessor processor(){
-        return new CryptoProcessor();
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public CryptoProcessor processor() {
+        return new CryptoProcessor(cryptoRepository);
     }
+
     @Bean
-    public RepositoryItemWriter<Crypto> writer(){
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public RepositoryItemWriter<Crypto> writer() {
         RepositoryItemWriter<Crypto> writerItem = new RepositoryItemWriter<>();
         writerItem.setRepository(cryptoRepository);
         writerItem.setMethodName("save");
@@ -70,16 +99,18 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public Step firstStep(){
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public Step firstStep() throws IOException {
         return stepBuilderFactory.get("first-step-csv").<CryptoReadCSVDto, Crypto>chunk(10)
-                .reader(reader())
+                .reader(multiReader())
                 .processor(processor())
                 .writer(writer())
                 .build();
     }
 
     @Bean
-    public Job job(){
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public Job job() throws IOException {
         return jobBuilderFactory.get("first-job-csv")
                 .flow(firstStep()).end().build();
     }
