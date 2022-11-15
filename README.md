@@ -2,4 +2,4 @@
 
 
 Status of Last Deployment:<br>
-<img src="https://github.com/GrigorTumanyan/CryptoCalculate/.github/workflows/push-ci.yml/badge.svg"><br>
+<img src="https://github.com/GrigorTumanyan/CryptoCalculate/workflows/Ci-pipeline-every-push/badge.svg?brench=dev"><br>
