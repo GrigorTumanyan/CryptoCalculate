@@ -22,4 +22,5 @@ public class CryptoDto {
         this.timestamp = timestamp;
         this.symbol = symbol;
         this.price = price;
-
+    }
+}
