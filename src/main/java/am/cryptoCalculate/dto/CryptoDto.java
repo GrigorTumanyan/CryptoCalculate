@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 import java.time.LocalDateTime;
 
 @Data
@@ -21,5 +22,4 @@ public class CryptoDto {
         this.timestamp = timestamp;
         this.symbol = symbol;
         this.price = price;
-    }
-}
+
