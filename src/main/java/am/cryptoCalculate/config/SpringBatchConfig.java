@@ -16,9 +16,17 @@ import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.stream.Stream;
 
 @Configuration
 @EnableBatchProcessing
@@ -28,8 +36,8 @@ public class SpringBatchConfig {
     public final StepBuilderFactory stepBuilderFactory;
     public final CryptoRepository cryptoRepository;
 
-    @Value("classpath:/input/*.csv")
-    private Resource[] inputResources;
+    @Value("${input.files.location}")
+    private String inputResources;
 
     public SpringBatchConfig(JobBuilderFactory jobBuilderFactory, StepBuilderFactory stepBuilderFactory, CryptoRepository cryptoRepository) {
         this.jobBuilderFactory = jobBuilderFactory;
@@ -38,14 +46,20 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public MultiResourceItemReader<CryptoReadCSVDto> multiReader() {
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public MultiResourceItemReader<CryptoReadCSVDto> multiReader() throws IOException {
         MultiResourceItemReader<CryptoReadCSVDto> multiReader = new MultiResourceItemReader<>();
-        multiReader.setResources(inputResources);
+        Resource[] convert;
+        try (Stream<Path> list = Files.list(Path.of(inputResources))) {
+            convert = list.map(PathResource::new).toArray(Resource[]::new);
+        }
+        multiReader.setResources(convert);
         multiReader.setDelegate(reader());
         return multiReader;
     }
 
     @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public FlatFileItemReader<CryptoReadCSVDto> reader() {
         FlatFileItemReader<CryptoReadCSVDto> reader = new FlatFileItemReader<>();
         reader.setName("csvReader");
@@ -70,11 +84,13 @@ public class SpringBatchConfig {
     }
 
     @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public CryptoProcessor processor() {
         return new CryptoProcessor(cryptoRepository);
     }
 
     @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     public RepositoryItemWriter<Crypto> writer() {
         RepositoryItemWriter<Crypto> writerItem = new RepositoryItemWriter<>();
         writerItem.setRepository(cryptoRepository);
@@ -83,7 +99,8 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public Step firstStep() {
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public Step firstStep() throws IOException {
         return stepBuilderFactory.get("first-step-csv").<CryptoReadCSVDto, Crypto>chunk(10)
                 .reader(multiReader())
                 .processor(processor())
@@ -92,7 +109,8 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public Job job() {
+    @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public Job job() throws IOException {
         return jobBuilderFactory.get("first-job-csv")
                 .flow(firstStep()).end().build();
     }

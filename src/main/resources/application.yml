@@ -17,4 +17,7 @@ spring:
   liquibase:
     changeLog: classpath:db/changelog/db.changelog-master.yml
 
+input:
+  files:
+    location: C:\\Users\\Grigor_Tumanyan\\Desktop\\java_mid_level_backend_exercise\\prices\\
 
