@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,5 +18,5 @@ public class CryptoReadCSVDto {
 
     private String symbol;
 
-    private double price;
+    private BigDecimal price;
 }

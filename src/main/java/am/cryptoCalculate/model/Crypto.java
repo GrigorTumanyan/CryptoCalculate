@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @AllArgsConstructor
@@ -27,6 +27,6 @@ public class Crypto {
     private String symbol;
 
     @Column
-    private double price;
+    private BigDecimal price;
 
 }

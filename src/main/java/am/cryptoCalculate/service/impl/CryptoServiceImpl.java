@@ -1,6 +1,7 @@
 package am.cryptoCalculate.service.impl;
 
 import am.cryptoCalculate.dto.CryptoDto;
+import am.cryptoCalculate.exception.ParamInvalidException;
 import am.cryptoCalculate.exception.RecordNotFoundException;
 import am.cryptoCalculate.mapper.CryptoMapper;
 import am.cryptoCalculate.model.Crypto;
@@ -9,6 +10,7 @@ import am.cryptoCalculate.service.CryptoService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -75,10 +77,17 @@ public class CryptoServiceImpl implements CryptoService {
     }
 
     @Override
-    public CryptoDto readCSVFile(String filePath) {
-
-return null;
-
-
+    public BigDecimal getHighestNormalizedRangeByDate(LocalDateTime start) {
+        LocalDateTime endDate = start.plusDays(1);
+        List<Crypto> cryptoList = cryptoRepository.getCryptosByOneDay(start, endDate);
+        if (cryptoList.isEmpty()) {
+            throw new ParamInvalidException("Date is not correct or doesn't found the record with specify day");
+        }
+        BigDecimal maxPrice = cryptoList.get(cryptoList.size() - 1).getPrice();
+        BigDecimal minPrice = cryptoList.get(0).getPrice();
+        if (!BigDecimal.ZERO.equals(minPrice)) {
+            return (maxPrice.subtract(minPrice)).divide(minPrice);
+        }
+        throw new RuntimeException("System couldn't count the normalized range");
     }
 }

@@ -11,17 +11,17 @@ import java.util.List;
 @Repository
 public interface CryptoRepository extends JpaRepository<Crypto, Long> {
 
-    String DURATION = " and timestamp BETWEEN now() - interval '30 day' and now())";
+    String DURATION_30_DAY = " and timestamp BETWEEN now() - interval '30 day' and now())";
 
-    @Query(value = "SELECT * FROM crypto WHERE price = (SELECT min(price) FROM crypto WHERE symbol = :symbol" + DURATION +
+    @Query(value = "SELECT * FROM crypto WHERE price = (SELECT min(price) FROM crypto WHERE symbol = :symbol" + DURATION_30_DAY +
             " ORDER BY timestamp ASC", nativeQuery = true)
     List<Crypto> getMinBySymbol(String symbol);
 
-    @Query(value = "SELECT * FROM crypto WHERE timestamp = (SELECT min (timestamp) FROM crypto WHERE symbol = :symbol" + DURATION,
+    @Query(value = "SELECT * FROM crypto WHERE timestamp = (SELECT min (timestamp) FROM crypto WHERE symbol = :symbol" + DURATION_30_DAY,
             nativeQuery = true)
     List<Crypto> getOldestBySymbol(String symbol);
 
-    @Query(value = "SELECT * FROM crypto WHERE timestamp = (SELECT max (timestamp) FROM crypto WHERE symbol = :symbol" + DURATION,
+    @Query(value = "SELECT * FROM crypto WHERE timestamp = (SELECT max (timestamp) FROM crypto WHERE symbol = :symbol" + DURATION_30_DAY,
             nativeQuery = true)
     List<Crypto> getNewestBySymbol(String symbol);
 
@@ -29,9 +29,12 @@ public interface CryptoRepository extends JpaRepository<Crypto, Long> {
             " and timestamp between ?2 and ?3 ) ORDER BY timestamp ASC", nativeQuery = true)
     List<Crypto> getMinBySymbolAndDuration(String symbol, LocalDateTime start, LocalDateTime end);
 
-    @Query(value = "SELECT * FROM crypto WHERE price = (SELECT max(price) FROM crypto WHERE symbol = :symbol" + DURATION +
+    @Query(value = "SELECT * FROM crypto WHERE price = (SELECT max(price) FROM crypto WHERE symbol = :symbol" + DURATION_30_DAY +
             " ORDER BY timestamp ASC", nativeQuery = true)
     List<Crypto> getMaxBySymbol(String symbol);
 
     List<Crypto> getByTimestamp(LocalDateTime localDateTime);
+
+    @Query(value = "SELECT * FROM crypto WHERE timestamp between :start and :endDate ORDER BY price ASC", nativeQuery = true)
+    List<Crypto> getCryptosByOneDay(LocalDateTime start, LocalDateTime endDate);
 }

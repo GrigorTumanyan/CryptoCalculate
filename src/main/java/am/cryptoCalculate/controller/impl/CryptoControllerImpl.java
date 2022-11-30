@@ -10,15 +10,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @RestController
 @RequestMapping("v1/crypto")
 public class CryptoControllerImpl implements CryptoController {
-
     private final CryptoService cryptoService;
 
     public CryptoControllerImpl(CryptoService cryptoService) {
@@ -62,7 +60,7 @@ public class CryptoControllerImpl implements CryptoController {
     @Override
     @GetMapping("/newest")
     public ResponseEntity<CryptoDto> getNewestBySymbol(String symbol) {
-        CryptoDto newest =  cryptoService.getNewestBySymbol(symbol);
+        CryptoDto newest = cryptoService.getNewestBySymbol(symbol);
         return new ResponseEntity<>(newest, HttpStatus.OK);
     }
 
@@ -71,6 +69,13 @@ public class CryptoControllerImpl implements CryptoController {
     public ResponseEntity<CryptoDto> getMaxPriceBySymbol(String symbol) {
         CryptoDto max = cryptoService.getMaxBySymbol(symbol);
         return new ResponseEntity<>(max, HttpStatus.OK);
+    }
+
+    @Override
+    @GetMapping("/highest-Normalized")
+    public ResponseEntity<BigDecimal> getHighestNormalizedRangeByDate(LocalDateTime startDay) {
+        BigDecimal highestNormalized = cryptoService.getHighestNormalizedRangeByDate(startDay);
+        return new ResponseEntity<>(highestNormalized, HttpStatus.OK);
     }
 
     @Override

@@ -3,13 +3,13 @@ package am.cryptoCalculate.service;
 import am.cryptoCalculate.dto.CryptoDto;
 import org.springframework.data.domain.Page;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 public interface CryptoService {
 
     CryptoDto getById(Long id);
+
     CryptoDto getOldestBySymbol(String symbol);
 
     CryptoDto getNewestBySymbol(String symbol);
@@ -22,6 +22,5 @@ public interface CryptoService {
 
     CryptoDto getMinPriceBySymbolAndGivenDate(String symbol, LocalDateTime start, LocalDateTime end);
 
-    CryptoDto readCSVFile(String path);
-
+    BigDecimal getHighestNormalizedRangeByDate(LocalDateTime start);
 }

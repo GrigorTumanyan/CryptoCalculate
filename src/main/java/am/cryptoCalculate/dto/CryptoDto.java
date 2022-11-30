@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,9 +16,9 @@ public class CryptoDto {
     private Long id;
     private LocalDateTime timestamp;
     private String symbol;
-    private double price;
+    private BigDecimal price;
 
-    public CryptoDto(LocalDateTime timestamp, String symbol, double price) {
+    public CryptoDto(LocalDateTime timestamp, String symbol, BigDecimal price) {
         this.timestamp = timestamp;
         this.symbol = symbol;
         this.price = price;

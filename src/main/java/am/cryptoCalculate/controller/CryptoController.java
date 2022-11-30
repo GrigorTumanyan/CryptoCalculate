@@ -2,7 +2,6 @@ package am.cryptoCalculate.controller;
 
 import am.cryptoCalculate.dto.CryptoDto;
 import am.cryptoCalculate.exception.ErrorResponse;
-import am.cryptoCalculate.model.Crypto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -17,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -89,8 +88,9 @@ public interface CryptoController {
             )
     })
     ResponseEntity<CryptoDto> getMinPriceBySymbol(@RequestParam("symbol")
-                             @Parameter(name = "symbol", description = "Specify the crypto type",
-                                     required = true, example = "BTC") String symbol);
+                                                  @Parameter(name = "symbol", description = "Specify the crypto type",
+                                                          required = true, example = "BTC") String symbol);
+
     @Operation(summary = "The endpoint for getting the oldest crypto by symbol")
     @ApiResponses(value = {
             @ApiResponse(
@@ -106,8 +106,8 @@ public interface CryptoController {
             )
     })
     ResponseEntity<CryptoDto> getOldestBySymbol(@RequestParam("symbol")
-                                             @Parameter(name = "symbol", description = "Specify the crypto type",
-                                                     required = true, example = "BTC") String symbol);
+                                                @Parameter(name = "symbol", description = "Specify the crypto type",
+                                                        required = true, example = "BTC") String symbol);
 
     @Operation(summary = "The endpoint for getting the newest crypto by symbol")
     @ApiResponses(value = {
@@ -145,12 +145,26 @@ public interface CryptoController {
                                                   @Parameter(name = "symbol", description = "Specify the crypto type",
                                                           required = true, example = "BTC") String symbol);
 
-
-
-
-
-
-
+    @Operation(summary = "The endpoint return the highest normalized range for a specific day")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    description = "success", responseCode = "200", content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = CryptoDto.class))
+            ),
+            @ApiResponse(
+                    description = "Record is not found", responseCode = "404", content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    description = "Record is only one or min value is 0.0", responseCode = "500", content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = RuntimeException.class))
+            )
+    })
+    ResponseEntity<BigDecimal> getHighestNormalizedRangeByDate(@RequestParam("startDay")
+                                                               @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                                                               @Parameter(name = "startDay", description = "Specify the start date",
+                                                                       required = true, example = "2022-10-24T08:48:30.569200")
+                                                               LocalDateTime startDay);
 
 
     @Operation(summary = "The endpoint for getting the min price with passed symbol and date ")
